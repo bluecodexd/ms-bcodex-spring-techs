@@ -13,8 +13,8 @@ metadata:
 
     # Governance
     environment: dev
-    team: yagami-escobar
-    owner: yagami-escobar
+    team: devops
+    owner: #{VAR_ENV_K8S_DEPLOY_OWNER}#
 
     # Observability
     observability.logs: "true"
@@ -45,8 +45,8 @@ spec:
         app.kubernetes.io/managed-by: helm
 
         environment: dev
-        team: yagami-escobar
-        owner: yagami-escobar
+        team: devops
+        owner: #{VAR_ENV_K8S_DEPLOY_OWNER}#
 
         observability.logs: "true"
         observability.metrics: "true"
@@ -56,7 +56,7 @@ spec:
     spec:
       containers:
         - name: #{VAR_ENV_K8S_DEPLOY_CONTAINER_NAME}#
-          image: ghcr.io/yagami-escobar/#{VAR_ENV_K8S_DEPLOY_IMAGE_NAME}#:#{VAR_ENV_K8S_DEPLOY_IMAGE_TAG}#
+          image: ghcr.io/#{VAR_ENV_K8S_DEPLOY_OWNER}#/#{VAR_ENV_K8S_DEPLOY_IMAGE_NAME}#:#{VAR_ENV_K8S_DEPLOY_IMAGE_TAG}#
           imagePullPolicy: Always
           ports:
            - name: http
