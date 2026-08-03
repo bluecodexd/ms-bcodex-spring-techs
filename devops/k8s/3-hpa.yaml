@@ -1,0 +1,31 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: #{VAR_ENV_K8S_HPA_NAME}#
+  namespace: #{VAR_ENV_K8S_NS_NAME}#
+  labels:
+    app.kubernetes.io/name: #{VAR_ENV_K8S_HPA_NAME}#
+    app.kubernetes.io/instance: #{VAR_ENV_K8S_HPA_NAME}#
+    environment: dev
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: #{VAR_ENV_K8S_DEPLOY_NAME}#
+
+  minReplicas: #{VAR_ENV_K8S_HPA_MIN_REPLICAS}#
+  maxReplicas: #{VAR_ENV_K8S_HPA_MAX_REPLICAS}#
+
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: #{VAR_ENV_K8S_HPA_TARGET_CPU_UTILIZATION}#
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: #{VAR_ENV_K8S_HPA_TARGET_MEMORY_UTILIZATION}#
