@@ -12,7 +12,7 @@ permissions:
 jobs:
   job_ci:
     runs-on: [self-hosted, runner-dev]
-    environment: env-vars-dev
+    environment: env-vars-desa
     steps:
       - uses: actions/checkout@v7
           
