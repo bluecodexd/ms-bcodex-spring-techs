@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:17-trixie
+    container_name: postgres-techs
+    environment:
+      POSTGRES_USER: yagami
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: techsdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s # Check every 10s
+      timeout: 5s  # Timeout after 5s
+      retries: 5
+  app:
+    build: .
+    container_name: ms-bcodex-spring-techs
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/techsdb
+      SPRING_DATASOURCE_USERNAME: yagami
+      SPRING_DATASOURCE_PASSWORD: 1234
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+networks:
+  techs-network:
+    driver: bridge  
+volumes:
+  postgres_data:
