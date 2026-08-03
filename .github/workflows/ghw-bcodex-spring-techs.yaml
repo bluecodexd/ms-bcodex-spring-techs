@@ -50,6 +50,8 @@ jobs:
           sed -i 's|#{VAR_ENV_K8S_NS_NAME}#|${{ vars.VAR_ENV_K8S_NS_NAME }}|g' devops/k8s/*.yaml
           
           sed -i 's|#{VAR_ENV_K8S_DEPLOY_NAME}#|${{ vars.VAR_ENV_K8S_DEPLOY_NAME }}|g' devops/k8s/*.yaml
+          sed -i 's|#{VAR_ENV_K8S_DEPLOY_OWNER}#|${{ vars.VAR_ENV_K8S_DEPLOY_OWNER }}|g' devops/k8s/*.yaml
+          
           sed -i 's|#{VAR_ENV_K8S_DEPLOY_CONTAINER_NAME}#|${{ vars.VAR_ENV_K8S_DEPLOY_CONTAINER_NAME }}|g' devops/k8s/*.yaml
           sed -i 's|#{VAR_ENV_K8S_DEPLOY_IMAGE_NAME}#|${{ vars.VAR_ENV_K8S_DEPLOY_IMAGE_NAME }}|g' devops/k8s/*.yaml
           sed -i 's|#{VAR_ENV_K8S_DEPLOY_IMAGE_TAG}#|${{ github.sha }}|g' devops/k8s/*.yaml
