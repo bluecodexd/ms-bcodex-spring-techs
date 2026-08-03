@@ -12,7 +12,7 @@ jobs:
   job_ci:
     runs-on: [self-hosted, runner-dev]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
           
       - name: stp-validate
         run: |
@@ -76,7 +76,7 @@ jobs:
 
       - name: Push image
         run: |
-          docker push ghcr.io/${{ github.repository_owner }}/ms-bcodex-nest-user:${{ github.sha }}
+          docker push ghcr.io/${{ github.repository_owner }}/ms-bcodex-spring-techs:${{ github.sha }}
 
       - name: stp-uploadArtifacts
         uses: actions/upload-artifact@v7
