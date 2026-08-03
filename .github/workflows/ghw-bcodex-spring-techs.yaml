@@ -14,6 +14,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
           
+      - name: stp-validate
+        run: |
+          echo "//------------------------------------------------------- PWD -------------------------------------------------------//"
+          pwd
+          echo "//------------------------------------------------------- LS -AL -------------------------------------------------------//"
+          ls -al 
+
+          echo "//------------- GH CONTEXT -------------//"
+          echo ${{ github.workspace }}
+          echo ${{ github.actor }}
+          echo ${{ github.repository }}
+          echo ${{ github.repository_owner }}
+          echo ${{ github.ref }}
+          echo ${{ github.sha }}
+          
+          echo "//------------- JOB-CONTEXT -------------//"
+          echo ${{ job.status }}
+          echo ${{ job.container }}
+          echo ${{ job.services }}
+          echo ${{ job.steps }}
+
+          # echo "//------------- ENV-CONTEXT -------------//"
+
+
       - name: Login to GHCR
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
@@ -55,25 +79,45 @@ jobs:
           docker push ghcr.io/${{ github.repository_owner }}/ms-bcodex-nest-user:${{ github.sha }}
 
       - name: stp-uploadArtifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v7
         with:
-          name: ghw-dev-bcodex-spring-techs-cicd-artifacts
+          name: art-ms-bcodex-spring-techs
           path: devops/k8s/*.yaml
 
   job_cd:
     runs-on: [self-hosted, runner-dev]
     needs: job_ci
     steps:
+
+      - name: stp-validate
+        run: |
+          echo "//------------------------------------------------------- PWD -------------------------------------------------------//"
+          pwd
+          echo "//------------------------------------------------------- LS -AL -------------------------------------------------------//"
+          ls -al 
+
       - name: stp-downloadArtifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v7
         with:
-          name: ghw-dev-bcodex-spring-techs-cicd-artifacts
+          name: art-ms-bcodex-spring-techs
           path: devops/k8s
+
+
+      - name: stp-validate
+        run: |
+          echo "//------------------------------------------------------- PWD -------------------------------------------------------//"
+          pwd
+          echo "//------------------------------------------------------- LS -AL -------------------------------------------------------//"
+          ls -al 
+
 
       - name: stp-applyK8s
         run: |
           cd ${{ github.workspace }}
+
+          kubectl config get-contexts
           
+          kubectl apply -f devops/k8s/0-namespace.yaml
           kubectl apply -f devops/k8s/1-deploy.yaml
           kubectl apply -f devops/k8s/2-service.yaml
           kubectl apply -f devops/k8s/3-hpa.yaml
