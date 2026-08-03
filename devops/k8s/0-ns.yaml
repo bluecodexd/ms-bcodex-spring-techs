@@ -1,0 +1,4 @@
+apiVersion: apps/v1
+kind: Namespace
+metadata:
+  name: #{VAR_ENV_K8S_NS_NAME}#

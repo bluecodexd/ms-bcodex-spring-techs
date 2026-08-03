@@ -1,0 +1,126 @@
+name: ghw-dev-bcodex-spring-techs-cicd
+
+on:
+  push:
+    branches: [ develop, release/* ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  job_ci:
+    runs-on: [self-hosted, runner-dev]
+    steps:
+      - uses: actions/checkout@v4
+          
+      - name: stp-validate
+        run: |
+          echo "//------------------------------------------------------- PWD -------------------------------------------------------//"
+          pwd
+          echo "//------------------------------------------------------- LS -AL -------------------------------------------------------//"
+          ls -al 
+
+          echo "//------------- GH CONTEXT -------------//"
+          echo ${{ github.workspace }}
+          echo ${{ github.actor }}
+          echo ${{ github.repository }}
+          echo ${{ github.repository_owner }}
+          echo ${{ github.ref }}
+          echo ${{ github.sha }}
+          
+          echo "//------------- JOB-CONTEXT -------------//"
+          echo ${{ job.status }}
+          echo ${{ job.container }}
+          echo ${{ job.services }}
+          echo ${{ job.steps }}
+
+          # echo "//------------- ENV-CONTEXT -------------//"
+
+
+      - name: Login to GHCR
+        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: stp-replace
+        run: |
+          cd ${{ github.workspace }}
+
+          sed -i 's|#{VAR_ENV_K8S_NS_NAME}#|${{ vars.VAR_ENV_K8S_NS_NAME }}|g' devops/k8s/*.yaml
+          
+          sed -i 's|#{VAR_ENV_K8S_DEPLOY_NAME}#|${{ vars.VAR_ENV_K8S_DEPLOY_NAME }}|g' devops/k8s/*.yaml
+          sed -i 's|#{VAR_ENV_K8S_DEPLOY_CONTAINER_NAME}#|${{ vars.VAR_ENV_K8S_DEPLOY_CONTAINER_NAME }}|g' devops/k8s/*.yaml
+          sed -i 's|#{VAR_ENV_K8S_DEPLOY_IMAGE_NAME}#|${{ vars.VAR_ENV_K8S_DEPLOY_IMAGE_NAME }}|g' devops/k8s/*.yaml
+          sed -i 's|#{VAR_ENV_K8S_DEPLOY_IMAGE_TAG}#|${{ github.sha }}|g' devops/k8s/*.yaml
+          sed -i 's|#{VAR_ENV_K8S_DEPLOY_CONTAINER_PORT}#|${{ vars.VAR_ENV_K8S_DEPLOY_CONTAINER_PORT }}|g' devops/k8s/*.yaml
+          sed -i 's|#{VAR_ENV_K8S_DEPLOY_REQUESTS_CPU}#|${{ vars.VAR_ENV_K8S_DEPLOY_REQUESTS_CPU }}|g' devops/k8s/*.yaml
+          sed -i 's|#{VAR_ENV_K8S_DEPLOY_REQUESTS_MEMORY}#|${{ vars.VAR_ENV_K8S_DEPLOY_REQUESTS_MEMORY }}|g' devops/k8s/*.yaml
+          sed -i 's|#{VAR_ENV_K8S_DEPLOY_LIMITS_CPU}#|${{ vars.VAR_ENV_K8S_DEPLOY_LIMITS_CPU }}|g' devops/k8s/*.yaml
+          sed -i 's|#{VAR_ENV_K8S_DEPLOY_LIMITS_MEMORY}#|${{ vars.VAR_ENV_K8S_DEPLOY_LIMITS_MEMORY }}|g' devops/k8s/*.yaml
+
+
+          sed -i 's|#{VAR_ENV_K8S_SVC_NAME}#|${{ vars.VAR_ENV_K8S_SVC_NAME }}|g' devops/k8s/*.yaml
+          sed -i 's|#{VAR_ENV_K8S_SVC_TYPE}#|${{ vars.VAR_ENV_K8S_SVC_TYPE }}|g' devops/k8s/*.yaml
+          sed -i 's|#{VAR_ENV_K8S_SVC_PORT}#|${{ vars.VAR_ENV_K8S_SVC_PORT }}|g' devops/k8s/*.yaml
+          sed -i 's|#{VAR_ENV_K8S_SVC_TARGET_PORT}#|${{ vars.VAR_ENV_K8S_SVC_TARGET_PORT }}|g' devops/k8s/*.yaml
+
+
+          sed -i 's|#{VAR_ENV_K8S_HPA_NAME}#|${{ vars.VAR_ENV_K8S_HPA_NAME }}|g' devops/k8s/*.yaml
+          sed -i 's|#{VAR_ENV_K8S_HPA_MIN_REPLICAS}#|${{ vars.VAR_ENV_K8S_HPA_MIN_REPLICAS }}|g' devops/k8s/*.yaml
+          sed -i 's|#{VAR_ENV_K8S_HPA_MAX_REPLICAS}#|${{ vars.VAR_ENV_K8S_HPA_MAX_REPLICAS }}|g' devops/k8s/*.yaml
+          sed -i 's|#{VAR_ENV_K8S_HPA_TARGET_CPU_UTILIZATION}#|${{ vars.VAR_ENV_K8S_HPA_TARGET_CPU_UTILIZATION }}|g' devops/k8s/*.yaml
+          sed -i 's|#{VAR_ENV_K8S_HPA_TARGET_RAM_UTILIZATION}#|${{ vars.VAR_ENV_K8S_HPA_TARGET_RAM_UTILIZATION }}|g' devops/k8s/*.yaml
+
+      - name: Build image
+        run: |
+          docker build --progress=plain -f Dockerfile -t ghcr.io/${{ github.repository_owner }}/ms-bcodex-spring-techs:${{ github.sha }} .
+
+      - name: Push image
+        run: |
+          docker push ghcr.io/${{ github.repository_owner }}/ms-bcodex-nest-user:${{ github.sha }}
+
+      - name: stp-uploadArtifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: art-ms-bcodex-spring-techs
+          path: devops/k8s/*.yaml
+
+  job_cd:
+    runs-on: [self-hosted, runner-dev]
+    needs: job_ci
+    steps:
+
+      - name: stp-validate
+        run: |
+          echo "//------------------------------------------------------- PWD -------------------------------------------------------//"
+          pwd
+          echo "//------------------------------------------------------- LS -AL -------------------------------------------------------//"
+          ls -al 
+
+      - name: stp-downloadArtifacts
+        uses: actions/download-artifact@v7
+        with:
+          name: art-ms-bcodex-spring-techs
+          path: devops/k8s
+
+
+      - name: stp-validate
+        run: |
+          echo "//------------------------------------------------------- PWD -------------------------------------------------------//"
+          pwd
+          echo "//------------------------------------------------------- LS -AL -------------------------------------------------------//"
+          ls -al 
+
+
+      - name: stp-applyK8s
+        run: |
+          cd ${{ github.workspace }}
+
+          kubectl config get-contexts
+          
+          kubectl apply -f devops/k8s/0-ns.yaml
+          kubectl apply -f devops/k8s/1-deploy.yaml
+          kubectl apply -f devops/k8s/2-service.yaml
+          kubectl apply -f devops/k8s/3-hpa.yaml
+
+
+      

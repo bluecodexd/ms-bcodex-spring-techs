@@ -45,10 +45,10 @@
 		</dependency>
 
 		<!-- POSTGRESQL -->
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-		</dependency>
+		</dependency> -->
 
 		<!-- Validation -->
 		<dependency>
@@ -70,11 +70,17 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- <dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-database-postgresql</artifactId>
 			<version>12.10.0</version>
 			<scope>compile</scope>
-		</dependency>
+		</dependency> -->
 		<!-- Actuator -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
