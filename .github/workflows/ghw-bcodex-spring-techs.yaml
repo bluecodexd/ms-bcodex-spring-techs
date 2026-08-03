@@ -102,7 +102,7 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: art-ms-bcodex-spring-techs
-          path: ${{ github.workspace }}
+          path: ${{ github.workspace }}/mfs
 
 
       - name: stp-validate
@@ -119,10 +119,10 @@ jobs:
 
           kubectl config get-contexts
           
-          kubectl apply -f devops/k8s/0-ns.yaml
-          kubectl apply -f devops/k8s/1-deploy.yaml
-          kubectl apply -f devops/k8s/2-service.yaml
-          kubectl apply -f devops/k8s/3-hpa.yaml
+          kubectl apply -f mfs/0-ns.yaml
+          kubectl apply -f mfs/1-deploy.yaml
+          kubectl apply -f mfs/2-service.yaml
+          kubectl apply -f mfs/3-hpa.yaml
 
 
       
