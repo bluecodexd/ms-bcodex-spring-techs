@@ -74,6 +74,12 @@ jobs:
           sed -i 's|#{VAR_ENV_K8S_HPA_TARGET_CPU_UTILIZATION}#|${{ vars.VAR_ENV_K8S_HPA_TARGET_CPU_UTILIZATION }}|g' devops/k8s/*.yaml
           sed -i 's|#{VAR_ENV_K8S_HPA_TARGET_MEMORY_UTILIZATION}#|${{ vars.VAR_ENV_K8S_HPA_TARGET_MEMORY_UTILIZATION }}|g' devops/k8s/*.yaml
 
+          sed -i 's|#{VAR_ENV_INGRESS_NAME}#|${{ vars.VAR_ENV_INGRESS_NAME }}|g' devops/k8s/*.yaml
+          sed -i 's|#{VAR_ENV_K8S_INGRESS_HOST}#|${{ vars.VAR_ENV_K8S_INGRESS_HOST }}|g' devops/k8s/*.yaml
+          sed -i 's|#{VAR_ENV_K8S_INGRESS_PATH1}#|${{ vars.VAR_ENV_K8S_INGRESS_PATH1 }}|g' devops/k8s/*.yaml
+          sed -i 's|#{VAR_ENV_K8S_INGRESS_SECRET_TLS_NAME}#|${{ vars.VAR_ENV_K8S_INGRESS_SECRET_TLS_NAME }}|g' devops/k8s/*.yaml
+
+
       - name: Build image
         run: |
           docker build --progress=plain -f Dockerfile -t ghcr.io/${{ github.repository_owner }}/ms-bcodex-spring-techs:${{ github.sha }} .

@@ -13,7 +13,7 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/api/v1/techs")
+@RequestMapping("/techs")
 public class TechController {
 
 
