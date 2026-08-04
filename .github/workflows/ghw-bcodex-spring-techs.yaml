@@ -136,6 +136,7 @@ jobs:
           kubectl apply -f mfs/1-deploy.yaml
           kubectl apply -f mfs/2-service.yaml
           kubectl apply -f mfs/3-hpa.yaml
+          kubectl apply -f mfs/4-ingress.yaml
 
 
       
