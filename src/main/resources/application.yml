@@ -1,4 +1,6 @@
 server:
+  servlet:
+    context-path: /api/techs
   error:
     include-message: always
     include-stacktrace: always

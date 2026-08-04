@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: #{VAR_ENV_INGRESS_NAME}#
+  namespace: #{VAR_ENV_K8S_NS_NAME}#
+  annotations:
+    cert-manager.io/cluster-issuer: selfsigned
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: #{VAR_ENV_K8S_INGRESS_HOST}#
+    http:
+      paths:
+      - path: #{VAR_ENV_K8S_INGRESS_PATH1}#
+        pathType: 
+        backend:
+          service:
+            name: #{VAR_ENV_K8S_SVC_NAME}#
+            port:
+              number: #{VAR_ENV_K8S_SVC_PORT}#
+  tls:
+  - hosts:
+    - #{VAR_ENV_K8S_INGRESS_HOST}#
+    secretName: #{VAR_ENV_K8S_INGRESS_SECRET_TLS_NAME}#
