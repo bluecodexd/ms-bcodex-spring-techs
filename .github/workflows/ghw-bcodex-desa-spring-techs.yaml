@@ -1,0 +1,167 @@
+name: ghw-bcodex-desa-spring-techs-cicd
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  job_ci:
+    runs-on: [self-hosted, runner-dev]
+    environment: env-vars-desa
+    steps:
+      - uses: actions/checkout@v7
+          
+      - name: stp-validate
+        run: |
+          echo "//------------------------------------------------------- PWD -------------------------------------------------------//"
+          pwd
+          echo "//------------------------------------------------------- LS -AL -------------------------------------------------------//"
+          ls -al 
+
+          echo "//------------- GH CONTEXT -------------//"
+          echo ${{ github.workspace }}
+          echo ${{ github.actor }}
+          echo ${{ github.repository }}
+          echo ${{ github.repository_owner }}
+          echo ${{ github.ref }}
+          echo ${{ github.sha }}
+          
+          echo "//------------- JOB-CONTEXT -------------//"
+          echo ${{ job.status }}
+          echo ${{ job.container }}
+          echo ${{ job.services }}
+          echo ${{ job.steps }}
+
+          # echo "//------------- ENV-CONTEXT -------------//"
+
+
+      - name: Login to GHCR
+        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: stp-replaceHelmVars
+        uses: qetza/replacetokens-action@v2.0.0
+        with:
+          token-pattern: 'default'
+          source: |
+            helm/ms-bcodex-spring-techs/*.yaml
+            helm/ms-bcodex-spring-techs/templates/*.yaml
+            helm/ms-bcodex-spring-techs/_helpers.tpl
+          variables: >
+            [
+              ${{ toJSON(vars)}},
+              ${{ toJSON(secrets)}}
+            ]
+
+      - name: Build image
+        run: |
+          docker build --progress=plain -f Dockerfile -t ghcr.io/${{ github.repository_owner }}/ms-bcodex-spring-techs:${{ github.sha }} .
+
+      - name: Push image
+        run: |
+          docker push ghcr.io/${{ github.repository_owner }}/ms-bcodex-spring-techs:${{ github.sha }}
+
+      - name: stp-uploadArtifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: art-ms-bcodex-spring-techs
+          path: helm/ms-bcodex-spring-techs
+
+  job_cd:
+    runs-on: [self-hosted, runner-dev]
+    needs: job_ci
+    steps:
+
+      - name: stp-validate
+        run: |
+          echo "//------------------------------------------------------- PWD -------------------------------------------------------//"
+          pwd
+          echo "//------------------------------------------------------- LS -AL -------------------------------------------------------//"
+          ls -al 
+
+      - name: stp-downloadArtifacts
+        uses: actions/download-artifact@v7
+        with:
+          name: art-ms-bcodex-spring-techs
+          path: ${{ github.workspace }}/helmx
+
+
+      - name: stp-validate
+        run: |
+          echo "//------------------------------------------------------- PWD -------------------------------------------------------//"
+          pwd
+          echo "//------------------------------------------------------- LS -AL -------------------------------------------------------//"
+          ls -al 
+          echo "//------------------------------------------------------- TREE -------------------------------------------------------//"
+          tree helmx
+          cat helmx/Chart.yaml
+          cat helmx/_helpers.tpl
+          cat helmx/values.yaml
+          cat helmx/templates/deployment.yaml
+          cat helmx/templates/service.yaml
+          cat helmx/templates/ingress.yaml
+          cat helmx/templates/hpa.yaml
+
+      - name: stp-HelmLint
+        run: |
+          cd ${{ github.workspace }}
+
+          helm lint ./helmx/ms-bcodex-spring-techs
+
+      - name: stp-HelmRender
+        run: |
+          cd ${{ github.workspace }}
+
+          helm template techs ./helmx/ms-bcodex-spring-techs \
+            --namespace bcodex-apps2 \
+            --values ./helmx/ms-bcodex-spring-techs/values-dev.yaml \
+            --set image.tag=${{ github.sha }}
+
+      - name: stp-HelmDryRun
+        run: |
+          cd ${{ github.workspace }}
+
+          helm upgrade --install techs ./helmx/ms-bcodex-spring-techs \
+            --namespace bcodex-apps2 --create-namespace \
+            --values ./helmx/ms-bcodex-spring-techs/values-dev.yaml \
+            --set image.tag=${{ github.sha }} \
+            --dry-run --debug
+      
+      - name: stp-HelmInstall
+        run: |
+          cd ${{ github.workspace }}
+
+          helm upgrade --install techs ./helmx/ms-bcodex-spring-techs \
+            --namespace bcodex-apps2 --create-namespace \
+            --values ./helmx/ms-bcodex-spring-techs/values-dev.yaml \
+            --set image.tag=${{ github.sha }} \
+            --atomic \
+            --wait --timeout 5m \
+            --history-max 5
+
+      - name: stp-HelmValidatePost
+        run: |
+          cd ${{ github.workspace }}
+
+          echo "//------------- VALIDATE RELEASE -------------//"
+          helm status techs --namespace bcodex-apps2
+
+          echo "//------------- VALIDATE HISTORY -------------//"
+          helm history techs --namespace bcodex-apps2
+
+          echo "//------------- VALIDATE RSCS -------------//"
+          kubectl -n bcodex-apps2 get all -l app.kubernetes.io/name=ms-bcodex-spring-techs
+
+          echo "//------------- VALIDATE DEPLOY-READY -------------//"
+          kubectl -n bcodex-apps rollout status deploy/ms-bcodex-spring-techs --timeout=60s
+
+          echo "//------------- VALIDATE EVENTS -------------//"
+          kubectl -n bcodex-apps2 get events --sort-by=.lastTimestamp
+
+
+
+      
