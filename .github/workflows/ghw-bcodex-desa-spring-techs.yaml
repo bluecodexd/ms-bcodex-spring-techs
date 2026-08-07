@@ -58,15 +58,15 @@ jobs:
             ]
       
 
-      - name: stp-setupJava
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-          cache: 'maven'
+      # - name: stp-setupJava
+      #   uses: actions/setup-java@v5
+      #   with:
+      #     distribution: 'temurin'
+      #     java-version: '21'
+      #     cache: 'maven'
       - name: stp-compileJar
         run: |
-          ./mvnw clean package -DskipTests
+          mvn clean package -DskipTests
       - name: Build image
         run: |
           docker build -f Dockerfile -t ghcr.io/${{ github.repository_owner }}/ms-bcodex-spring-techs:${{ github.sha }} .
