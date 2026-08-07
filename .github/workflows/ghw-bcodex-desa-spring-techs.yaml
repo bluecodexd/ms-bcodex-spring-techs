@@ -59,7 +59,7 @@ jobs:
 
       - name: Build image
         run: |
-          docker build --progress=plain -f Dockerfile -t ghcr.io/${{ github.repository_owner }}/ms-bcodex-spring-techs:${{ github.sha }} .
+          docker build -f Dockerfile -t ghcr.io/${{ github.repository_owner }}/ms-bcodex-spring-techs:${{ github.sha }} .
 
       - name: Push image
         run: |
