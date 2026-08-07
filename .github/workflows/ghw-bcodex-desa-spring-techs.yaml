@@ -47,7 +47,7 @@ jobs:
         uses: qetza/replacetokens-action@v2.0.0
         with:
           token-pattern: 'default'
-          source: |
+          sources: |
             helm/ms-bcodex-spring-techs/*.yaml
             helm/ms-bcodex-spring-techs/templates/*.yaml
             helm/ms-bcodex-spring-techs/_helpers.tpl
