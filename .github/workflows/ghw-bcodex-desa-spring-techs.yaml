@@ -64,10 +64,9 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
           cache: 'maven'
-          
       - name: stp-compileJar
         run: |
-          mvn clean package -DskipTests
+          ./mvnw clean package -DskipTests
       - name: Build image
         run: |
           docker build -f Dockerfile -t ghcr.io/${{ github.repository_owner }}/ms-bcodex-spring-techs:${{ github.sha }} .
