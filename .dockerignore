@@ -1,0 +1,46 @@
+# Git
+.git
+.github
+.gitignore
+.gitattributes
+
+# IDE
+.vscode
+.idea
+*.iml
+
+# Maven
+target/
+.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile*
+docker-compose*.yaml
+.dockerignore
+
+# Kubernetes / Helm
+helm/
+k8s/
+
+# Documentation
+README.md
+LICENSE
+
+# Environment
+.env
+.env.*
+
+# Tests
+src/test/
+
+# Temporary
+*.tmp
+*.swp
