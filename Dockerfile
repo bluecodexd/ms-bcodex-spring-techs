@@ -1,20 +1,12 @@
-FROM eclipse-temurin:21-jdk as builder
+FROM eclipse-temurin:21-jre as builder
 
 WORKDIR /app
 
-COPY . .
-
-RUN ./mvnw clean package -DskipTests
-
-FROM eclipse-temurin:21-jre as runtime
-
-WORKDIR /app
+COPY target/*.jar /app/
 
 RUN useradd -r -u 10001 appuser && \
     groupadd -r appgroup && \
     usermod -aG appgroup appuser
-
-COPY --from=builder /app/target/*.jar app.jar
 
 RUN chown -R appuser:appgroup /app
 
