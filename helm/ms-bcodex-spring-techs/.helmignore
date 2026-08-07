@@ -1,0 +1,19 @@
+# VCS
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Helm
+*.tgz
+
+# Docs
+README.md
+
+# Tests
+tests/
