@@ -109,23 +109,23 @@ jobs:
           echo "//------------------------------------------------------- TREE -------------------------------------------------------//"
           tree helmx
           echo "//------------------------------------------------------- CAT CART.YAML -------------------------------------------------------//"
-          cat helmx/Chart.yaml
+          cat helmx/ms-bcodex-spring-techs/Chart.yaml
           echo "//------------------------------------------------------- CAT VALUES.YAML -------------------------------------------------------//"
-          cat helmx/values-dev.yaml
+          cat helmx/ms-bcodex-spring-techs/values-dev.yaml
           echo "//------------------------------------------------------- CAT _HELPERS.TPL -------------------------------------------------------//"
-          cat helmx/templates/_helpers.tpl
+          cat helmx/ms-bcodex-spring-techs/templates/_helpers.tpl
           echo "//------------------------------------------------------- CAT DEPLOYMENT.YAML -------------------------------------------------------//"
-          cat helmx/templates/deployment.yaml
+          cat helmx/ms-bcodex-spring-techs/templates/deployment.yaml
           echo "//------------------------------------------------------- CAT SERVICE.YAML -------------------------------------------------------//"
-          cat helmx/templates/service.yaml
+          cat helmx/ms-bcodex-spring-techs/templates/service.yaml
           echo "//------------------------------------------------------- CAT INGRESS.YAML -------------------------------------------------------//"
-          cat helmx/templates/ingress.yaml
+          cat helmx/ms-bcodex-spring-techs/templates/ingress.yaml
           echo "//------------------------------------------------------- CAT HPA.YAML -------------------------------------------------------//"
-          cat helmx/templates/hpa.yaml
+          cat helmx/ms-bcodex-spring-techs/templates/hpa.yaml
           echo "//------------------------------------------------------- CAT SECRET.YAML -------------------------------------------------------//"
-          cat helmx/templates/secret.yaml || true
+          cat helmx/ms-bcodex-spring-techs/templates/secret.yaml || true
           echo "//------------------------------------------------------- CAT CONFIGMAP.YAML -------------------------------------------------------//"
-          cat helmx/templates/configmap.yaml || true
+          cat helmx/ms-bcodex-spring-techs/templates/configmap.yaml || true
 
       - name: stp-HelmLint
         run: |
