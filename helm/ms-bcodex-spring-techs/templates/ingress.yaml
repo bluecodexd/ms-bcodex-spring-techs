@@ -16,7 +16,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: {{ include "ms-bcodex-spring-techs.fullname" . }}
+            name: {{ include "ms-bcodex-spring-techs.name" . }}
             port:
               number: {{ .Values.service.port }}
   tls:
