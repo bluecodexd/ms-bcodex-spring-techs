@@ -109,12 +109,14 @@ jobs:
           echo "//------------------------------------------------------- TREE -------------------------------------------------------//"
           tree helmx
           cat helmx/Chart.yaml
-          cat helmx/_helpers.tpl
           cat helmx/values.yaml
+          cat helmx/templates/_helpers.tpl
           cat helmx/templates/deployment.yaml
           cat helmx/templates/service.yaml
           cat helmx/templates/ingress.yaml
           cat helmx/templates/hpa.yaml
+          cat helmx/templates/secret.yaml || true
+          cat helmx/templates/configmap.yaml || true
 
       - name: stp-HelmLint
         run: |
