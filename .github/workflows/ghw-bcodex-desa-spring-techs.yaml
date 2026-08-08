@@ -50,11 +50,10 @@ jobs:
           sources: |
             helm/ms-bcodex-spring-techs/*.yaml
             helm/ms-bcodex-spring-techs/templates/*.yaml
-            helm/ms-bcodex-spring-techs/_helpers.tpl
+            helm/ms-bcodex-spring-techs/templates/_helpers.tpl
           variables: >
             [
-              ${{ toJSON(vars)}},
-              ${{ toJSON(secrets)}}
+              ${{ toJSON(vars)}}
             ]
       
 
