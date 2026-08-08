@@ -97,7 +97,7 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: art-ms-bcodex-spring-techs
-          path: ${{ github.workspace }}/helmx
+          path: ${{ github.workspace }}/helmx/ms-bcodex-spring-techs
 
 
       - name: stp-validate
@@ -108,14 +108,23 @@ jobs:
           ls -al 
           echo "//------------------------------------------------------- TREE -------------------------------------------------------//"
           tree helmx
+          echo "//------------------------------------------------------- CAT CART.YAML -------------------------------------------------------//"
           cat helmx/Chart.yaml
-          cat helmx/values.yaml
+          echo "//------------------------------------------------------- CAT VALUES.YAML -------------------------------------------------------//"
+          cat helmx/values-dev.yaml
+          echo "//------------------------------------------------------- CAT _HELPERS.TPL -------------------------------------------------------//"
           cat helmx/templates/_helpers.tpl
+          echo "//------------------------------------------------------- CAT DEPLOYMENT.YAML -------------------------------------------------------//"
           cat helmx/templates/deployment.yaml
+          echo "//------------------------------------------------------- CAT SERVICE.YAML -------------------------------------------------------//"
           cat helmx/templates/service.yaml
+          echo "//------------------------------------------------------- CAT INGRESS.YAML -------------------------------------------------------//"
           cat helmx/templates/ingress.yaml
+          echo "//------------------------------------------------------- CAT HPA.YAML -------------------------------------------------------//"
           cat helmx/templates/hpa.yaml
+          echo "//------------------------------------------------------- CAT SECRET.YAML -------------------------------------------------------//"
           cat helmx/templates/secret.yaml || true
+          echo "//------------------------------------------------------- CAT CONFIGMAP.YAML -------------------------------------------------------//"
           cat helmx/templates/configmap.yaml || true
 
       - name: stp-HelmLint
@@ -159,19 +168,21 @@ jobs:
         run: |
           cd ${{ github.workspace }}
 
-          echo "//------------- VALIDATE RELEASE -------------//"
-          helm status techs --namespace bcodex-apps2
 
-          echo "//------------- VALIDATE HISTORY -------------//"
+          echo "//------------------------------------------------------- HELM RELEASE -------------------------------------------------------//"
+          helm status techs --namespace bcodex-apps2
+          
+          echo "//------------------------------------------------------- VALIDATE HISTORY -------------------------------------------------------//"
           helm history techs --namespace bcodex-apps2
 
-          echo "//------------- VALIDATE RSCS -------------//"
+          echo "//------------------------------------------------------- VALIDATE RSCS -------------------------------------------------------//"
           kubectl -n bcodex-apps2 get all -l app.kubernetes.io/name=ms-bcodex-spring-techs
 
-          echo "//------------- VALIDATE DEPLOY-READY -------------//"
+          echo "//------------------------------------------------------- VALIDATE DEPLOY-READY -------------------------------------------------------//"
           kubectl -n bcodex-apps rollout status deploy/ms-bcodex-spring-techs --timeout=60s
 
-          echo "//------------- VALIDATE EVENTS -------------//"
+
+          echo "//------------------------------------------------------- VALIDATE EVENTS -------------------------------------------------------//"
           kubectl -n bcodex-apps2 get events --sort-by=.lastTimestamp
 
 
