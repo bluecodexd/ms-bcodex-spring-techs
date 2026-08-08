@@ -1,0 +1,15 @@
+# .github/CODEOWNERS
+
+# ALl Repo
+* @bluecodexd/Dev-Team
+
+# DevOps / CI-CD
+/.github/   @bluecodexd/DevOps-Team
+/Dockerfile @bluecodexd/DevOps-Team
+/docker-compose.yaml @bluecodexd/DevOps-Team
+/k8s        @bluecodexd/DevOps-Team
+/helm       @bluecodexd/DevOps-Team
+
+# App
+/pom.xml @bluecodexd/Dev-Team
+/src/ @bluecodexd/Dev-Team
