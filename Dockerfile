@@ -2,7 +2,7 @@ FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
-COPY target/*.jar /app/
+COPY target/*.jar /app/app.jar
 
 RUN useradd -r -u 10001 appuser && \
     groupadd -r appgroup && \

@@ -178,7 +178,7 @@ jobs:
           kubectl -n bcodex-apps2 get all -l app.kubernetes.io/name=ms-bcodex-spring-techs
 
           echo "//------------------------------------------------------- VALIDATE DEPLOY-READY -------------------------------------------------------//"
-          kubectl -n bcodex-apps rollout status deploy/ms-bcodex-spring-techs --timeout=60s
+          kubectl -n bcodex-apps2 rollout status deploy/ms-bcodex-spring-techs --timeout=60s
 
 
           echo "//------------------------------------------------------- VALIDATE EVENTS -------------------------------------------------------//"
