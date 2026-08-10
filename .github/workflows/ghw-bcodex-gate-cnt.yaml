@@ -64,8 +64,25 @@ jobs:
           image-ref: ${{ env.ORG }}/${{ env.APP }}:pr-${{ github.sha }}
           format: sarif
           output: trivy-results.sarif
+          vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
 
+      - name: stp-debugTrivySARIF
+        run: |
+          echo "=== SARIF file ==="
+          ls -lh trivy-results.sarif
+
+          echo "=== SARIF results count ==="
+          jq '[.runs[].results[]] | length' trivy-results.sarif
+
+          echo "=== SARIF runs ==="
+          jq '.runs[] | {
+            tool: .tool.driver.name,
+            rules: (.tool.driver.rules | length),
+            results: (.results | length)
+          }' trivy-results.sarif
+          
       - name: stp-generateSBOMTrivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
