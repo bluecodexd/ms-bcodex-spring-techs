@@ -1,0 +1,11 @@
+schemaVersion: "2.0.0"
+
+# Validate /app/app.jar exists and that the image exposes port 8080
+fileExistenceTests:
+  - name: "Application JAR exists"
+    path: "/app/app.jar"
+    shouldExist: true
+
+metadataTest:
+  exposedPorts: 
+    - "8080"

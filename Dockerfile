@@ -1,17 +1,22 @@
-FROM eclipse-temurin:21-jre
+FROM maven:3.9-eclipse-temurin-21 AS builder
 
 WORKDIR /app
 
-COPY target/*.jar /app/app.jar
+COPY app/pom.xml .
+RUN mvn -B -e dependency:go-offline
 
-RUN useradd -r -u 10001 appuser && \
-    groupadd -r appgroup && \
-    usermod -aG appgroup appuser
+COPY app/src ./src
+RUN mvn -B clean package -DskipTests
 
-RUN chown -R appuser:appgroup /app
+FROM gcr.io/distroless/java21-debian12 AS runtime
 
-USER appuser
+WORKDIR /app
+
+COPY --from=builder --chown=nonroot:nonroot \
+    /app/target/*.jar app.jar
+
+USER nonroot:nonroot
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+CMD ["/app/app.jar"]

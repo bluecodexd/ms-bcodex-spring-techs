@@ -2,12 +2,17 @@ name: ghw-bcodex-desa-spring-techs-cicd
 
 on:
   push:
-    branches: [develop]
+    branches: 
+      - develop
   workflow_dispatch:
+
+env:
+  DEV_REPO: docker.io/jhordan01/ms-bcodex-spring-techs-dev
 
 permissions:
   contents: read
   packages: write
+
 
 jobs:
   job_ci:
@@ -16,32 +21,72 @@ jobs:
     steps:
       - uses: actions/checkout@v7
           
-      - name: stp-validate
-        run: |
-          echo "//------------------------------------------------------- PWD -------------------------------------------------------//"
-          pwd
-          echo "//------------------------------------------------------- LS -AL -------------------------------------------------------//"
-          ls -al 
+      # - name: stp-validate
+      #   run: |
+      #     echo "//------------------------------------------------------- PWD -------------------------------------------------------//"
+      #     pwd
+      #     echo "//------------------------------------------------------- LS -AL -------------------------------------------------------//"
+      #     ls -al 
 
-          echo "//------------- GH CONTEXT -------------//"
-          echo ${{ github.workspace }}
-          echo ${{ github.actor }}
-          echo ${{ github.repository }}
-          echo ${{ github.repository_owner }}
-          echo ${{ github.ref }}
-          echo ${{ github.sha }}
+      #     echo "//------------- GH CONTEXT -------------//"
+      #     echo ${{ github.workspace }}
+      #     echo ${{ github.actor }}
+      #     echo ${{ github.repository }}
+      #     echo ${{ github.repository_owner }}
+      #     echo ${{ github.ref }}
+      #     echo ${{ github.sha }}
           
-          echo "//------------- JOB-CONTEXT -------------//"
-          echo ${{ job.status }}
-          echo ${{ job.container }}
-          echo ${{ job.services }}
-          echo ${{ job.steps }}
+      #     echo "//------------- JOB-CONTEXT -------------//"
+      #     echo ${{ job.status }}
+      #     echo ${{ job.container }}
+      #     echo ${{ job.services }}
+      #     echo ${{ job.steps }}
 
-          # echo "//------------- ENV-CONTEXT -------------//"
+      #     # echo "//------------- ENV-CONTEXT -------------//"
 
 
-      - name: Login to GHCR
-        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      # - name: Login to GHCR
+      #   run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: stp-loginDockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: stp-setupQEMU
+        uses: docker/setup-qemu-action@v4.2.0
+
+      - name: stp-setupBuildx
+        uses: docker/setup-buildx-action@v4.2.0
+
+      - name: stp-dockerMetadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DEV_REPO }}
+          tags: |
+            type=sha,format=short,prefix=sha-
+            type=raw,value=latest
+
+      - name: stp-buildAndPush
+        id: build
+        uses: docker/build-push-action@v7.3.0
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64, linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+
+      - name: stp-buildSummary
+        run: |
+          echo "=========================================="
+          echo " Image pushed to dev registry"
+          echo "=========================================="
+          echo " Tags   : ${{ steps.meta.outputs.tags }}"
+          echo " Digest : ${{ steps.build.outputs.digest }}"
+          echo "=========================================="
 
       - name: stp-replaceHelmVars
         uses: qetza/replacetokens-action@v2.0.0
@@ -63,16 +108,17 @@ jobs:
       #     distribution: 'temurin'
       #     java-version: '21'
       #     cache: 'maven'
-      - name: stp-compileJar
-        run: |
-          mvn clean package -DskipTests
-      - name: Build image
-        run: |
-          docker build -f Dockerfile -t ghcr.io/${{ github.repository_owner }}/ms-bcodex-spring-techs:${{ github.sha }} .
+      # - name: stp-compileJar
+      #   run: |
+      #     mvn clean package -DskipTests
 
-      - name: Push image
-        run: |
-          docker push ghcr.io/${{ github.repository_owner }}/ms-bcodex-spring-techs:${{ github.sha }}
+      # - name: Build image
+      #   run: |
+      #     docker build -f Dockerfile -t ghcr.io/${{ github.repository_owner }}/ms-bcodex-spring-techs:${{ github.sha }} .
+
+      # - name: Push image
+      #   run: |
+      #     docker push ghcr.io/${{ github.repository_owner }}/ms-bcodex-spring-techs:${{ github.sha }}
 
       - name: stp-uploadArtifacts
         uses: actions/upload-artifact@v7
