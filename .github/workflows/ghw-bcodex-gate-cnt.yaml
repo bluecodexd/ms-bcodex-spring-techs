@@ -1,0 +1,130 @@
+name: ghw-bcodex-gate-cnt
+
+on:
+  pull_request:
+    branches:
+      - develop
+  workflow_dispatch:
+
+env:
+  ORG: jhordan01
+  APP: ms-bcodex-spring-techs
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  lint_build_scan:
+    runs-on: [self-hosted, runner-dev]
+    steps:
+      - name: stp-checkout
+        uses: actions/checkout@v7
+
+      - name: stp-installHadolint
+        run: |
+          mkdir -pv $HOME/bin
+          curl -fsSLO https://github.com/hadolint/hadolint/releases/download/v2.15.1/hadolint-linux-arm64
+          chmod +x hadolint-linux-arm64
+          cp -v hadolint-linux-arm64 $HOME/bin/hadolint
+          echo "$HOME/bin" >> $GITHUB_PATH
+
+      - name: stp-lintDockerfile
+        run: |
+          hadolint ./Dockerfile --failure-threshold error
+      
+      - name: stp-setupQEMU
+        uses: docker/setup-qemu-action@v4.2.0
+
+      - name: stp-setupBuildx
+        uses: docker/setup-buildx-action@v4.2.0
+        with:
+          version: latest
+          buildkitd-flags: --debug
+      
+      - name: stp-buildImage
+        uses: docker/build-push-action@v7.3.0
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          tags: ${{ env.ORG }}/${{ env.APP }}:pr-${{ github.sha }}
+
+      - name: stp-setupTrivy
+        uses: aquasecurity/setup-trivy@v0.3.1
+        with:
+          cache: true
+          version: v0.69.3
+      
+      - name: stp-generateResultsTrivySARIF
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: image
+          image-ref: ${{ env.ORG }}/${{ env.APP }}:pr-${{ github.sha }}
+          format: sarif
+          output: trivy-results.sarif
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+
+      - name: stp-debugTrivySARIF
+        run: |
+          echo "=== SARIF file ==="
+          ls -lh trivy-results.sarif
+
+          echo "=== SARIF results count ==="
+          jq '[.runs[].results[]] | length' trivy-results.sarif
+
+          echo "=== SARIF runs ==="
+          jq '.runs[] | {
+            tool: .tool.driver.name,
+            rules: (.tool.driver.rules | length),
+            results: (.results | length)
+          }' trivy-results.sarif
+          
+      - name: stp-generateSBOMTrivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: image
+          image-ref: ${{ env.ORG }}/${{ env.APP }}:pr-${{ github.sha }}
+          format: cyclonedx
+          output: sbom.cdx.json
+          exit-code: '0'
+
+      - name: stp-uploadSBOM
+        uses: actions/upload-artifact@v7
+        with:
+          name: sbom-pr-${{ github.sha }}
+          path: sbom.cdx.json
+
+      - name: stp-uploadTrivySARIF
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-results.sarif
+          category: trivy-image
+                          
+      - name: stp-installContainerStructureTest
+        run: |
+          curl -LO https://github.com/GoogleContainerTools/container-structure-test/releases/download/v1.22.1/container-structure-test-linux-arm64
+          chmod +x container-structure-test-linux-arm64
+          cp -v container-structure-test-linux-arm64 $HOME/bin/container-structure-test
+          echo "$HOME/bin" >> $GITHUB_PATH
+
+      - name: stp-runContainerStructureTest
+        run: |
+          container-structure-test test \
+            --image ${{ env.ORG }}/${{ env.APP }}:pr-${{ github.sha }} \
+            --config tests/container-structure-test.yaml
+          
+      - name: stp-vulnerabilityScanTrivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: image
+          image-ref: ${{ env.ORG }}/${{ env.APP }}:pr-${{ github.sha }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL'
+          skip-setup-trivy: true
