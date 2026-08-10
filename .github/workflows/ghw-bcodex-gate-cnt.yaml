@@ -17,18 +17,16 @@ jobs:
       - name: stp-checkout
         uses: actions/checkout@v7
 
-      - name: Login GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: stp-installHadolint
+        run: |
+          curl -fsSLO https://github.com/hadolint/hadolint/releases/download/v2.15.1/hadolint-linux-arm64
+          chmod +x hadolint-linux-arm64
+          cp -v hadolint-linux-arm64 $HOME/bin/hadolint
+          echo "$HOME/bin" >> $GITHUB_PATH
 
       - name: stp-lintDockerfile
-        uses: hadolint/hadolint-action@v3.4.0
-        with:
-          dockerfile: Dockerfile
-          failure-threshold: error
+        run: |
+          hadolint ./Dockerfile --failure-threshold error
       
       - name: stp-setupQEMU
         uses: docker/setup-qemu-action@v4.2.0
