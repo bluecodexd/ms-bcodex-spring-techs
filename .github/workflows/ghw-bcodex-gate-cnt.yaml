@@ -19,6 +19,7 @@ jobs:
 
       - name: stp-installHadolint
         run: |
+          mkdir -pv $HOME/bin
           curl -fsSLO https://github.com/hadolint/hadolint/releases/download/v2.15.1/hadolint-linux-arm64
           chmod +x hadolint-linux-arm64
           cp -v hadolint-linux-arm64 $HOME/bin/hadolint
